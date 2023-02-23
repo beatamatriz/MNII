@@ -18,3 +18,15 @@ def conjugada(A):
         return conjugate(A.reshape(1,-1))
     else:
         return conjugate(transpose(A))
+    
+def norma_vec(X, p):
+    inf_norm = max(abs((1.0 + 0j)*X))
+    if p == inf:
+        return inf_norm
+    if p >= 1:
+        if inf_norm > 1:
+            return inf_norm*((sum((abs((1.0 + 0j)*X)/inf_norm)**p))**(1/p))
+        else:
+            return (sum(abs((1.0 + 0j)*X)**p))**(1/p)
+    else:
+        return "error"
