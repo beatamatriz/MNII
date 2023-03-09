@@ -30,3 +30,6 @@ def norma_vec(X, p):
             return (sum(abs((1.0 + 0j)*X)**p))**(1/p)
     else:
         return "error"
+def norma_mat(A, p):
+    #arreglar esto
+    return norm(A,p)
