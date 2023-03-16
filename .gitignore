@@ -1,2 +1,4 @@
 
 prácticas/.ipynb_checkpoints/*
+*.pyc
+prácticas/__pycache__/*
