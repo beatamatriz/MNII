@@ -69,3 +69,94 @@ def remonte(A, B):
             X[i, :] -= A[i, i+1:]@X[i+1:, :]
         X[i, :] = X[i, :]/A[i, i]
     return True, X
+
+
+def gauss_pp(A, B):
+    m, n = shape(A)
+    p, q = shape(B)
+    if m != n or n != p or q < 1:
+        return False, "Error gauss_pp: error en las dimensiones."
+    if A.dtype == complex or B.dtype == complex:
+        gaussA = array(A, dtype=complex)
+        gaussB = array(B, dtype=complex)
+    else:
+        gaussA = array(A, dtype=float)
+        gaussB = array(B, dtype=float)
+    for k in range(n-1):
+        pos = argmax(abs(gaussA[k:, k]))
+        ik = pos+k
+        if ik != k:
+            gaussA[[ik, k], :] = gaussA[[k, ik], :]
+            gaussB[[ik, k], :] = gaussB[[k, ik], :]
+        if abs(gaussA[k, k]) >= 1e-200:
+            for i in range(k+1, n):
+                gaussA[i, k] = gaussA[i, k]/gaussA[k, k]
+                gaussA[i, k+1:] -= gaussA[i, k]*gaussA[k, k+1:]
+                gaussB[i, :] -= gaussA[i, k]*gaussB[k, :]
+    exito, X = remonte(gaussA, gaussB)
+    return exito, X
+
+
+def solve_diag(A, B):
+    m, n = shape(A)
+    p, q = shape(B)
+    if m != n or n != p or q < 1:
+        return False, "Error solve_diag: error en las dimensiones."
+    if min(abs(diag(A))) < 1e-200:
+        return False, "Error solve_diag: matriz singular."
+    if A.dtype == complex or B.dtype == complex:
+        X = zeros((n, q), dtype=complex)
+    else:
+        X = zeros((n, q), dtype=float)
+    for i in range(n):
+        X[i, :] = B[i, :]/A[i,i]
+    return True, X
+
+def gaussjordan_pp(A, B):
+    m, n = shape(A)
+    p, q = shape(B)
+    if m != n or n != p or q < 1:
+        return False, "Error gaussjordan_pp: error en las dimensiones."
+    if A.dtype == complex or B.dtype == complex:
+        gaussA = array(A, dtype=complex)
+        gaussB = array(B, dtype=complex)
+    else:
+        gaussA = array(A, dtype=float)
+        gaussB = array(B, dtype=float)
+    for k in range(n):
+        pos = argmax(abs(gaussA[k:, k]))
+        ik = pos+k
+        if ik != k:
+            gaussA[[ik, k], :] = gaussA[[k, ik], :]
+            gaussB[[ik, k], :] = gaussB[[k, ik], :]
+        if abs(gaussA[k, k]) >= 1e-200:
+            for i in range(n):
+                if i != k:
+                    gaussA[i, k] = gaussA[i, k]/gaussA[k, k]
+                    gaussA[i, k+1:] -= gaussA[i, k]*gaussA[k, k+1:]
+                    gaussB[i, :] -= gaussA[i, k]*gaussB[k, :]
+        
+        else:
+            return False, "Error gaussjordan_pp: matriz singular."
+    exito, X = solve_diag(gaussA, gaussB)
+    return exito, X
+
+def inverse_gauss(A):
+    m, n = shape(A)
+    if m!=n:
+        return False, "Error inverse_gauss: error de dimensiones"
+    exito, inv_A = gauss_pp(A, eye(m))
+    if not exito:
+        return exito, "Error inverse_gauss: matriz singular"
+    else:
+        return exito, inv_A
+    
+def inverse_gaussjordan(A):
+    m, n = shape(A)
+    if m!=n:
+        return False, "Error inverse_gaussjordan: error de dimensiones"
+    exito, inv_A = gaussjordan_pp(A, eye(m))
+    if not exito:
+        return exito, "Error inverse_gaussjordan: matriz singular"
+    else:
+        return exito, inv_A
