@@ -33,3 +33,39 @@ def norma_vec(X, p):
 def norma_mat(A, p):
     #arreglar esto
     return norm(A,p)
+
+def descenso(A, B):
+    m, n = shape(A)
+    p, q = shape(B)
+    if m != n or n != p or q < 1:
+        return False, "Error descenso: error en las dimensiones."
+    if min(abs(diag(A))) < 1e-200:
+        return False, "Error descenso: matriz singular."
+    if A.dtype == complex or B.dtype == complex:
+        X = zeros((n, q), dtype=complex)
+    else:
+        X = zeros((n, q), dtype=float)
+    for i in range(n):
+        X[i, :] = B[i, :]
+        if i != 0:
+            X[i, :] -= A[i, :i]@X[:i, :]
+        X[i, :] = X[i, :]/A[i, i]
+    return True, X
+
+def remonte(A, B):
+    m, n = shape(A)
+    p, q = shape(B)
+    if m != n or n != p or q < 1:
+        return False, "Error remonte: error en las dimensiones."
+    if min(abs(diag(A))) < 1e-200:
+        return False, "Error remonte: matriz singular."
+    if A.dtype == complex or B.dtype == complex:
+        X = zeros((n, q), dtype=complex)
+    else:
+        X = zeros((n, q), dtype=float)
+    for i in range(n-1,-1,-1):
+        X[i, :] = B[i, :]
+        if i != n-1:
+            X[i, :] -= A[i, i+1:]@X[i+1:, :]
+        X[i, :] = X[i, :]/A[i, i]
+    return True, X
