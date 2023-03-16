@@ -71,32 +71,6 @@ def remonte(A, B):
     return True, X
 
 
-def gauss_pp(A, B):
-    m, n = shape(A)
-    p, q = shape(B)
-    if m != n or n != p or q < 1:
-        return False, "Error gauss_pp: error en las dimensiones."
-    if A.dtype == complex or B.dtype == complex:
-        gaussA = array(A, dtype=complex)
-        gaussB = array(B, dtype=complex)
-    else:
-        gaussA = array(A, dtype=float)
-        gaussB = array(B, dtype=float)
-    for k in range(n-1):
-        pos = argmax(abs(gaussA[k:, k]))
-        ik = pos+k
-        if ik != k:
-            gaussA[[ik, k], :] = gaussA[[k, ik], :]
-            gaussB[[ik, k], :] = gaussB[[k, ik], :]
-        if abs(gaussA[k, k]) >= 1e-200:
-            for i in range(k+1, n):
-                gaussA[i, k] = gaussA[i, k]/gaussA[k, k]
-                gaussA[i, k+1:] -= gaussA[i, k]*gaussA[k, k+1:]
-                gaussB[i, :] -= gaussA[i, k]*gaussB[k, :]
-    exito, X = remonte(gaussA, gaussB)
-    return exito, X
-
-
 def solve_diag(A, B):
     m, n = shape(A)
     p, q = shape(B)
@@ -112,8 +86,45 @@ def solve_diag(A, B):
         X[i, :] = B[i, :]/A[i,i]
     return True, X
 
-def gaussjordan_pp(A, B):
+
+def gauss_pp(A, B=None, verbose=False):
     m, n = shape(A)
+    if B is None:
+        B = eye(m)
+    p, q = shape(B)
+    if m != n or n != p or q < 1:
+        return False, "Error gauss_pp: error en las dimensiones."
+    if A.dtype == complex or B.dtype == complex:
+        gaussA = array(A, dtype=complex)
+        gaussB = array(B, dtype=complex)
+    else:
+        gaussA = array(A, dtype=float)
+        gaussB = array(B, dtype=float)
+    for k in range(n-1):
+        pos = argmax(abs(gaussA[k:, k]))
+        ik = pos+k
+        if verbose:
+            print("Procesando",str(k+1)+"-ésima iteración...")
+            print("Pivote:", ik+1)
+        if ik != k:
+            gaussA[[ik, k], :] = gaussA[[k, ik], :]
+            gaussB[[ik, k], :] = gaussB[[k, ik], :]
+        if abs(gaussA[k, k]) >= 1e-200:
+            for i in range(k+1, n):
+                gaussA[i, k] = gaussA[i, k]/gaussA[k, k]
+                gaussA[i, k+1:] -= gaussA[i, k]*gaussA[k, k+1:]
+                gaussB[i, :] -= gaussA[i, k]*gaussB[k, :]
+    if verbose:
+        print("Nuevo sistema esquivalente A'X=B'")
+        print("A' = ", triu(gaussA))
+        print("B' = ", gaussB)
+    exito, X = remonte(gaussA, gaussB)
+    return exito, X
+
+def gaussjordan_pp(A, B=None, verbose=False):
+    m, n = shape(A)
+    if B is None:
+        B = eye(m)
     p, q = shape(B)
     if m != n or n != p or q < 1:
         return False, "Error gaussjordan_pp: error en las dimensiones."
@@ -126,6 +137,9 @@ def gaussjordan_pp(A, B):
     for k in range(n):
         pos = argmax(abs(gaussA[k:, k]))
         ik = pos+k
+        if verbose:
+            print("Procesando",str(k+1)+"-ésima iteración...")
+            print("Pivote:", ik+1)
         if ik != k:
             gaussA[[ik, k], :] = gaussA[[k, ik], :]
             gaussB[[ik, k], :] = gaussB[[k, ik], :]
@@ -138,6 +152,11 @@ def gaussjordan_pp(A, B):
         
         else:
             return False, "Error gaussjordan_pp: matriz singular."
+        
+    if verbose:
+        print("Nuevo sistema equivalente A'X=B'")
+        print("A' = ", diag(gaussA))
+        print("B' = ", gaussB)
     exito, X = solve_diag(gaussA, gaussB)
     return exito, X
 
