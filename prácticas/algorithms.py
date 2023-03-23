@@ -87,6 +87,22 @@ def solve_diag(A, B):
     return True, X
 
 
+def descenso1(A, B):
+    m, n = shape(A)
+    p, q = shape(B)
+    if m != n or n != p or q < 1:
+        return False, "Error descenso: error en las dimensiones."
+    if A.dtype == complex or B.dtype == complex:
+        X = zeros((n, q), dtype=complex)
+    else:
+        X = zeros((n, q), dtype=float)
+    for i in range(n):
+        X[i, :] = B[i, :]
+        if i != 0:
+            X[i, :] -= A[i, :i]@X[:i, :]
+    return True, X
+
+
 def gauss_pp(A, B=None, verbose=False):
     m, n = shape(A)
     if B is None:
@@ -159,6 +175,7 @@ def gaussjordan_pp(A, B=None, verbose=False):
         print("B' = ", gaussB)
     exito, X = solve_diag(gaussA, gaussB)
     return exito, X
+        
 
 def inverse_gauss(A):
     m, n = shape(A)
@@ -179,3 +196,43 @@ def inverse_gaussjordan(A):
         return exito, "Error inverse_gaussjordan: matriz singular"
     else:
         return exito, inv_A
+
+def facto_lu(A):
+    m,n = shape(A)
+    if m!=n:
+        return False, "Error facto_lu: error de dimensiones"
+    if A.dtype == complex:
+        LU = array(A, dtype=complex)
+    else:
+        LU = array(A, dtype=float)
+    
+    for k in range(n-1):
+        if abs(LU[k, k]) >= 1e-200:
+            for i in range(k+1, n):
+                LU[i, k] = LU[i, k]/LU[k, k]
+                LU[i, k+1:] -= LU[i, k]*LU[k, k+1:]
+        else:
+            return False, "Error facto_lu: no existe factorización"
+
+    return True, LU
+
+
+
+def metodo_lu(A, B=None):
+    m,n = shape(A)
+    if B is None:
+        B = eye(m)
+    p,q = shape(B)
+    if p == m and q >= 1:
+        success, LU = facto_lu(A)
+        if success and abs(LU[m-1,m-1]) >= 1e-200:
+            _, Y = descenso1(LU, B)
+            _, X = remonte(LU, Y)
+            return success, X
+        else:
+            return success, LU
+    else:
+        return False, "Erro metodo_lu: error de dimensiones"
+    
+def inverse_lu(A):
+    return metodo_lu(A)
