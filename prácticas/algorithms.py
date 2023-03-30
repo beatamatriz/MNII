@@ -103,7 +103,7 @@ def descenso1(A, B):
     return True, X
 
 
-def gauss_pp(A, B=None, verbose=False):
+def gauss_pp(A, B=None, verbose=False, getTriu=False):
     m, n = shape(A)
     if B is None:
         B = eye(m)
@@ -134,8 +134,11 @@ def gauss_pp(A, B=None, verbose=False):
         print("Nuevo sistema esquivalente A'X=B'")
         print("A' = ", triu(gaussA))
         print("B' = ", gaussB)
-    exito, X = remonte(gaussA, gaussB)
-    return exito, X
+    if getTriu:
+        return True, triu(gaussA)
+    else:
+        exito, X = remonte(gaussA, gaussB)
+        return exito, X
 
 def gaussjordan_pp(A, B=None, verbose=False):
     m, n = shape(A)
@@ -232,7 +235,37 @@ def metodo_lu(A, B=None):
         else:
             return success, LU
     else:
-        return False, "Erro metodo_lu: error de dimensiones"
+        return False, "Error metodo_lu: error de dimensiones"
     
 def inverse_lu(A):
     return metodo_lu(A)
+
+
+def householder(Z):
+    dim = Z.shape
+    if len(dim) == 1:
+        Z=conjugada(Z)
+    m,n = Z.shape
+    I = eye(m)
+    H = I - 2*Z@conjugada(Z)/(conjugada(Z)@Z)
+    return H
+
+
+def zetaholder(X):
+    dim = X.shape
+    if len(dim) == 1:
+        X=conjugada(X)
+    m,n = X.shape
+    E = zeros((m,n))
+    E[0][0]+=1
+    Z = X + norm(X)*pow(math.e,angle(X[0][0]))*E
+    H = householder(Z)
+    return H, householder(H@X + X)
+
+def cond(X,p=1):
+    _,X_ = inverse_lu(X)
+    
+    return norm(X,p)*norm(X_,p) 
+    
+    
+    
