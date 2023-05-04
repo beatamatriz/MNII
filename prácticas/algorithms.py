@@ -267,5 +267,95 @@ def cond(X,p=1):
     
     return norm(X,p)*norm(X_,p) 
     
+def potencia(A, X, norma, itermax, tol):
+    m, n = shape(A)
+    r, s = shape(X)
+    if m != n or n != r or s != 1:
+        return False, 'ERROR potencia: no se ejecuta el programa.', 0, 0
+    k = 0
+    error = 1.
+    normaold = 0.
+    if A.dtype == complex or X.dtype == complex:
+        lambdas = zeros(n, dtype=complex)
+    else:
+        lambdas = zeros(n, dtype=float)
+    while k < itermax and error >= tol:
+        k = k+1
+        Y = A@X
+        normanew = norm(Y, ord=norma)
+        error = abs(normanew - normaold)
+        for i in range(n):
+            if abs(X[i, 0]) >= 1.e-100:
+                lambdas[i] = Y[i, 0]/X[i, 0]
+            else:
+                lambdas[i] = 0.
+        X = Y/normanew
+        print('Iteración: k = ', k)
+        print('Norma: ||A*X_k|| = ', normanew)
+#        print('Lambdas: lambdas_k = \n', lambdas)
+#        print('Vectores: X_k = \n', X)
+        normaold = normanew
+    if k == itermax and error >= tol:
+        return False, 'ERROR potencia: no se alcanza convergencia.', 0, 0
+    else:
+        print('Método de la potencia: convergencia numérica alcanzada.')
+        return True, normanew, lambdas, X    
+
     
+def potenciainv(A, X, norma, itermax, tol):
+    m, n = shape(A)
+    r, s = shape(X)
+    if m != n or n != r or s != 1:
+        return False, 'ERROR potenciainv: no se ejecuta el programa.', 0, 0
+    exito, LU = facto_lu(A)
+    if not exito:
+        return False, 'ERROR potenciainv: sin factorización LU.', 0, 0
+    k = 0
+    error = 1.
+    normaold = 0.
+    if A.dtype == complex or X.dtype == complex:
+        lambdas = zeros(n, dtype=complex)
+    else:
+        lambdas = zeros(n, dtype=float)
+    while k < itermax and error >= tol:
+        k = k+1
+        exito, Y = descenso1(LU, X)
+        exito, Y = remonte(LU, Y)
+        if not exito:
+            return False, 'ERROR potenciainv: sin factorización LU.', 0, 0
+        normanew = norm(Y, ord=norma)
+        error = abs(normanew - normaold)
+        for i in range(n):
+            if abs(X[i, 0]) >= 1e-100:
+                lambdas[i] = Y[i, 0]/X[i, 0]
+            else:
+                lambdas[i] = 0.
+        X = Y/normanew
+        print('Iteración: k = ', k)
+        print('Norma: ||A-1*X_k|| = ', normanew)
+#        print('Lambdas: lambdas_k = ', lambdas)
+#        print('Vectores: X_k = ', X)
+        normaold = normanew
+    if k == itermax and error >= tol:
+        return False, 'ERROR potenciainv: no se alcanza convergencia.', 0, 0
+    else:
+        print('Método de la potencia inversa: convergencia numérica alcanzada.')
+        return True, normanew, lambdas, X
     
+def potenciades(A, X, des, norma, itermax, tol):
+    m, n = shape(A)
+    r, s = shape(X)
+    if m != n or n!= r or s != 1:
+        return False, 'ERROR potenciades: no se ejecuta el programa.', 0, 0
+    B = A - des*eye(n)
+    exito, normanew, lambdas, X = potencia(B, X, norma, itermax, tol)
+    return exito, normanew, lambdas, X 
+
+def potenciadesinv(A, X, des, norma, itermax, tol):
+    m, n = shape(A)
+    r, s = shape(X)
+    if m != n or n!= r or s != 1:
+        return False, 'ERROR potenciadesinv: no se ejecuta el programa.', 0, 0
+    B = A - des*eye(n)
+    exito, normanew, lambdas, X = potenciainv(B, X, norma, itermax, tol)
+    return exito, normanew, lambdas, X
