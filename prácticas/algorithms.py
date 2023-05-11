@@ -267,6 +267,42 @@ def cond(X,p=1):
     
     return norm(X,p)*norm(X_,p) 
     
+    
+def jacobi(A, B, XOLD, itermax=500, tol=1e-10):
+    m, n = shape(A)
+    p, q = shape(B)
+    r, s = shape(XOLD)
+    if m != n or n != p or q != 1 or n != r or s != 1 or min(abs(diag(A))) < 1e-200:
+        return False, 'ERROR jacobi: no se resuelve el sistema.'
+    k = 0
+    error = 1.
+    while k < itermax and error >= tol:
+        k = k+1
+        XNEW = array(B)
+        for i in range(n):
+            if i != 0:
+                XNEW[i, 0] -= A[i, :i]@XOLD[:i, 0]
+            if i != n-1:
+                XNEW[i, 0] -= A[i, i+1:]@XOLD[i+1:, 0]
+            XNEW[i, 0] = XNEW[i, 0]/A[i, i]
+        error = norma_vec(XNEW - XOLD, inf)
+        XOLD = array(XNEW)
+    print('Iteración: k = ', k)
+    print('Error absoluto: error = ', error)
+    if k == itermax and error >= tol:
+        return False, 'ERROR jacobi: no se alcanza convergencia.'
+    else:
+        print('Convergencia numérica alcanzada: jacobi.')
+        return True, XNEW
+
+
+    
+def gauss_seidel(A, B, XOLD, itermax, tol):
+    ...
+    
+def relajacion(A, B, XOLD, omega, itermax, tol):
+    ...
+    
 def potencia(A, X, norma, itermax, tol):
     m, n = shape(A)
     r, s = shape(X)
