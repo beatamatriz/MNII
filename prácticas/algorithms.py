@@ -395,3 +395,67 @@ def potenciadesinv(A, X, des, norma, itermax, tol):
     B = A - des*eye(n)
     exito, normanew, lambdas, X = potenciainv(B, X, norma, itermax, tol)
     return exito, normanew, lambdas, X
+
+"""
+Glosario:
+
+1. Definición de Arrays
+==========================================================================================================================
+eye(N[, M, k, dtype, order, like])            ::      matriz k-diagonal de 1oss     |   ||
+identity(n[, dtype, like])                    ::      matriz identidad              ||  | __
+ones(shape[, dtype, order, like])             ::      matriz rellena de unos (no repitdo la broma, que no hizo risa)
+zeros(shape[, dtype, order, like])            ::      matriz nula
+full(shape, fill_value[, dtype, order, like]) ::      matriz rellena (del valor fill_value)     
+[...]_like(a[, dtype, order, subok, shape])   ::      matriz [...] con las mismas dimensiones que A
+diag(v[, k])                                  ::      matriz k-diagonal a partir de un vector !no necesariamente, pero tal
+diagflat(v[, k])                              ::      matriz k-diagonal interpretando v como vector
+tri(N[, M, k, dtype, like])                   ::      triangular inferior de unos 
+tril(m[, k])                                  ::      extraer la matriz triangular inferior
+triu(m[, k])                                  ::      extraer la matriz triangular superior
+vander(x[, N, increasing])                    ::      matriz de vandermonde (mejor que mi método feucho, supongo)
+arange([start,] stop[, step,][, dtype, like]) ::      numeritos de un rango distribuidos con un paso metidos en un array
+
+
+
+2. Operaciones con Arrays (numpy.linalg)
+==========================================================================================================================
+
+2.1 Productos
+--------------------------------------------------------------------------------------------------------------------------
+dot(a, b[, out])                              ::      producto escalar o matricial (creo) sin conjugar vectores complejos
+multi_dot(arrays, *[, out])                   ::      cadena de productos matriciales (primer vector fila, último columna)
+vdot(a, b, /)                                 ::      producto escalar o matricial con conjugado complejo
+inner(a, b, /)                                ::      producto escalar interno (vectores)
+outer(a, b[, out])                            ::      producto externo, diádico, tensorial, mágico, fantástico (muy útil)
+matmul(x1, x2, /[, out, casting, order, ...]) ::      producto matricial (equivalentemente operador @)
+matrix_power(a, n)                            ::      potencia de una matriz cuadrada
+kron(a, b)                                    ::      producto de kronecker
+
+2.2 Factorizaciones
+--------------------------------------------------------------------------------------------------------------------------    
+cholesky(a)                                   ::      factorización de cholesky
+qr(a[, mode])                                 ::      factorización qr
+svd(a[, full_matrices, compute_uv, ...])      ::      descomposición en valores singulares
+
+2.3 Valores Propios
+--------------------------------------------------------------------------------------------------------------------------
+eig(a)                                        ::      valores y vectores propios (matriz cuadrada)
+eigh(a[, UPLO])                               ::      valores y vectores propios (matriz hermitiana)
+eigvals(a)                                    ::      valores propios
+eigvalsh(a[, UPLO])                           ::      valores propios (matriz hermitiana)
+
+2.4 Normas
+--------------------------------------------------------------------------------------------------------------------------
+norm(x[, ord, axis, keepdims])                ::      norma (vectorial o matricial)
+cond(x[, p])                                  ::      condicionamiento de una matriz
+det(a)                                        ::      determinante
+matrix_rank(A[, tol, hermitian])              ::      rango (método de decomposición en valores singulares)
+trace(a[, offset, axis1, axis2, dtype, out])  ::      la traza, como era de esperar
+
+2.5 Sistemas de Ecuaciones
+--------------------------------------------------------------------------------------------------------------------------
+solve(a, b)                                   ::      resuelve un sistema de ecuaciones en forma matricial Ax = B
+lstsq(a, b[, rcond])                          ::      resuelve el sistema lineal Ax = B con el método de mínimos cuadrados
+inv(a)                                        ::      matriz inversa
+
+"""
