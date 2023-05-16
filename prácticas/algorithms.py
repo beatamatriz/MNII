@@ -2,22 +2,99 @@ from numpy import *
 from numpy.linalg import *
 from numpy import abs, sum, max, min
 
+
+# Práctica 1
+# ==========
 def mat_arange(k):
+    """
+    input: k, natural number greater than 0
+    output: matrix evenly filled with values ranging from 1 to k²
+    """
     return array([[k*i+j+1 for j in range(k)] for i in range(k)])
 
 def hilbert(n):
+    """
+    input: n, natural number greater than 0
+    output: n-hilbert matrix
+    """
     return array([[1/(i+j+1) for j in range(n)] for i in range(n)])
 
 def vandermonde(n, alphas):
+    """
+    vandermonde matrix
+    """
     return array([[alphas[i]**(j) for j in range(n)] for i in range(n)])
 
+# Práctica 2
+# ==========
+
 def conjugada(A):
+    """
+    input: A, non-empty array
+    output: complex-conjugate array of A (A*)
+    """
     if len(A.shape) == 1 or A.shape[0] == 1:
         return conjugate(A.reshape(-1,1))
     elif A.shape[1] == 1:
         return conjugate(A.reshape(1,-1))
     else:
         return conjugate(transpose(A))
+
+def isDiagonalizable(A, verbose=False, d=None, P=None):
+    if d is None or P is None:
+        d, P = eig(A)
+    detP = det(P)
+    if verbose:
+        print("Matriz: A = ", A)
+        print("Vector de autovalores: d = ", d)
+        print("Matriz de autovectores: P = ", P)
+        print("det(P) = ", detP)
+    if abs(detP) > 1.e-10:
+        D = inv(P)@A@P
+        if verbose:
+            print("La matriz es diagonalizable.")
+            print("inv(P)@A@P = ", D)
+            print("Comprobación: ", max(abs(D - diag(d))))
+        return True
+    elif verbose:
+        print("La matriz no es diagonalizable.")
+    return False
+
+def isNormal(A, verbose=False):
+    normal = A@conjugada(A) - conjugada(A)@A
+    if verbose: print("A@A^* - A^*@A = ", normal)
+    mv = max(abs(normal))
+    if mv > 1.e-10:
+        if verbose: print("La matriz no es normal.")
+        return False
+    else:
+        if verbose: print("La matriz es normal.")
+        return True
+
+def isOrtoUnit(A, verbose=False):
+    d,P = eig(A)
+    if isDiagonalizable(A, verbose, d, P):
+        n = size(d)
+        unit = conjugada(P)@P
+        print("P^*@P = ", unit)
+        mv = max(abs(unit - eye(n)))
+        if mv > 1.e-10:
+            if verbose: print("La matriz de paso no es ortogonal-unitaria.")
+            return False
+        else:
+            if verbose: print("La matriz de paso es ortogonal-unitaria.")
+            return True
+    else:
+        return False
+
+def printEigens(A):
+    d, P = eig(A)
+    n = size(d)
+    for i in range(n):
+        print("Autovalor: lambda = ", d[i], " Autovector: x = ", P[:, i])
+
+# Práctica 3
+# ==========
     
 def norma_vec(X, p):
     inf_norm = max(abs((1.0 + 0j)*X))
@@ -33,6 +110,9 @@ def norma_vec(X, p):
 def norma_mat(A, p):
     #arreglar esto
     return norm(A,p)
+
+# Práctica 4
+# ==========
 
 def descenso(A, B):
     m, n = shape(A)
@@ -102,6 +182,8 @@ def descenso1(A, B):
             X[i, :] -= A[i, :i]@X[:i, :]
     return True, X
 
+# Práctica 5
+# ==========
 
 def gauss_pp(A, B=None, verbose=False, getTriu=False):
     m, n = shape(A)
@@ -200,6 +282,9 @@ def inverse_gaussjordan(A):
     else:
         return exito, inv_A
 
+# Práctica 6
+# ==========
+    
 def facto_lu(A):
     m,n = shape(A)
     if m!=n:
@@ -240,6 +325,8 @@ def metodo_lu(A, B=None):
 def inverse_lu(A):
     return metodo_lu(A)
 
+# Práctica 7
+# ==========
 
 def householder(Z):
     dim = Z.shape
@@ -267,7 +354,9 @@ def cond(X,p=1):
     
     return norm(X,p)*norm(X_,p) 
     
-    
+# Práctica 8
+# ==========
+
 def jacobi(A, B, XOLD, itermax=500, tol=1e-10):
     m, n = shape(A)
     p, q = shape(B)
@@ -302,6 +391,9 @@ def gauss_seidel(A, B, XOLD, itermax, tol):
     
 def relajacion(A, B, XOLD, omega, itermax, tol):
     ...
+
+# Práctica 9
+# ==========
     
 def potencia(A, X, norma, itermax, tol):
     m, n = shape(A)
@@ -398,6 +490,8 @@ def potenciadesinv(A, X, des, norma, itermax, tol):
 
 """
 Glosario:
+
+0. 
 
 1. Definición de Arrays
 ==========================================================================================================================
