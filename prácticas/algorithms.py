@@ -222,6 +222,39 @@ def gauss_pp(A, B=None, verbose=False, getTriu=False):
         exito, X = remonte(gaussA, gaussB)
         return exito, X
 
+def gauss_1p(A, B, verbose=False):
+    m, n = shape(A)
+    p, q = shape(B)
+    if m != n or n != p or q < 1:
+        return False, "Error gauss_pp: error en las dimensiones."
+    if A.dtype == complex or B.dtype == complex:
+        gaussA = array(A, dtype=complex)
+        gaussB = array(B, dtype=complex)
+    else:
+        gaussA = array(A, dtype=float)
+        gaussB = array(B, dtype=float)
+    for k in range(n-1):
+        ik = k
+        while gaussA[ik,k] < 1e-200 or ik < n:
+            ik+=1
+        if verbose:
+            print("Procesando",str(k+1)+"-ésima iteración...")
+            print("Pivote:", ik+1)
+        if ik != k:
+            gaussA[[ik, k], :] = gaussA[[k, ik], :]
+            gaussB[[ik, k], :] = gaussB[[k, ik], :]
+        if abs(gaussA[k, k]) >= 1e-200:
+            for i in range(k+1, n):
+                gaussA[i, k] = gaussA[i, k]/gaussA[k, k]
+                gaussA[i, k+1:] -= gaussA[i, k]*gaussA[k, k+1:]
+                gaussB[i, :] -= gaussA[i, k]*gaussB[k, :]
+    if verbose:
+        print("Nuevo sistema esquivalente A'X=B'")
+        print("A' = ", triu(gaussA))
+        print("B' = ", gaussB)
+    exito, X = remonte(gaussA, gaussB)
+    return exito, X    
+
 def gaussjordan_pp(A, B=None, verbose=False):
     m, n = shape(A)
     if B is None:
@@ -370,9 +403,9 @@ def jacobi(A, B, XOLD, itermax=500, tol=1e-10):
         XNEW = array(B)
         for i in range(n):
             if i != 0:
-                XNEW[i, 0] -= A[i, :i]@XOLD[:i, 0]
+                XNEW[i, 0] -= A[i, :i]@XOLD[:i, 0]  # 
             if i != n-1:
-                XNEW[i, 0] -= A[i, i+1:]@XOLD[i+1:, 0]
+                XNEW[i, 0] -= A[i, i+1:]@XOLD[i+1:, 0]  # 
             XNEW[i, 0] = XNEW[i, 0]/A[i, i]
         error = norma_vec(XNEW - XOLD, inf)
         XOLD = array(XNEW)
@@ -386,11 +419,60 @@ def jacobi(A, B, XOLD, itermax=500, tol=1e-10):
 
 
     
-def gauss_seidel(A, B, XOLD, itermax, tol):
-    ...
+def relajación(A, B, XOLD, omeg, itermax, tol):
+    m, n = shape(A)
+    p, q = shape(B)
+    r, s = shape(XOLD)
+    if m != n or n != p or q != 1 or n != r or s != 1 or min(abs(diag(A))) < 1e-200:
+        return False, 'ERROR jacobi: no se resuelve el sistema.'
+    k = 0
+    error = 1.
+    while k < itermax and error >= tol:
+        k = k+1
+        XNEW = array(B)
+        for i in range(n):
+            if i != 0:
+                XNEW[i, 0] -= A[i, :i]@XNEW[:i, 0]  # 
+            if i != n-1:
+                XNEW[i, 0] -= A[i, i+1:]@XOLD[i+1:, 0]  # 
+            XNEW[i, 0] += (1-omeg)*XOLD[i,0]/omeg
+            XNEW[i, 0] = omeg*XNEW[i, 0]/A[i, i]
+        error = norma_vec(XNEW - XOLD, inf)
+        XOLD = array(XNEW)
+    print('Iteración: k = ', k)
+    print('Error absoluto: error = ', error)
+    if k == itermax and error >= tol:
+        return False, 'ERROR jacobi: no se alcanza convergencia.'
+    else:
+        print('Convergencia numérica alcanzada: jacobi.')
+        return True, XNEW
     
-def relajacion(A, B, XOLD, omega, itermax, tol):
-    ...
+def gauss_seidel(A, B, XOLD, itermax, tol):
+    m, n = shape(A)
+    p, q = shape(B)
+    r, s = shape(XOLD)
+    if m != n or n != p or q != 1 or n != r or s != 1 or min(abs(diag(A))) < 1e-200:
+        return False, 'ERROR jacobi: no se resuelve el sistema.'
+    k = 0
+    error = 1.
+    while k < itermax and error >= tol:
+        k = k+1
+        XNEW = array(B)
+        for i in range(n):
+            if i != 0:
+                XNEW[i, 0] -= A[i, :i]@XNEW[:i, 0]  # 
+            if i != n-1:
+                XNEW[i, 0] -= A[i, i+1:]@XOLD[i+1:, 0]  # 
+            XNEW[i, 0] = XNEW[i, 0]/A[i, i]
+        error = norma_vec(XNEW - XOLD, inf)
+        XOLD = array(XNEW)
+    print('Iteración: k = ', k)
+    print('Error absoluto: error = ', error)
+    if k == itermax and error >= tol:
+        return False, 'ERROR jacobi: no se alcanza convergencia.'
+    else:
+        print('Convergencia numérica alcanzada: jacobi.')
+        return True, XNEW
 
 # Práctica 9
 # ==========
